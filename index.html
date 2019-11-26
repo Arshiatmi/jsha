@@ -1,0 +1,36 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Main Game</title>
+</head>
+
+<body>
+    <div id="fDiv">
+
+    </div>
+    <div id="mainDiv">
+        <img src="./test.jpg" id="test" style="width: 100px;height: 100px;" />
+        <img src="./test2.jpg" id="test2" style="width: 100px;height: 100px;" />
+    </div>
+</body>
+<script src="script.js"></script>
+<script>
+    var a = new menuCreator('fDiv');
+    a.addOption("Resume Game",rGame);
+    a.addEvent("mouseenter","Resume Game",function(){func(a.object)});
+    a.addEvent("mouseleave","Resume Game",function(){func2(a.object)});
+    function rGame(){
+        print("Game Resumed !");
+    }
+    function func(obj){
+        obj.style.color = "red";
+    }
+    function func2(obj){
+        obj.style.color = "black";
+    }
+</script>
+
+</html>
