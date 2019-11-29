@@ -161,6 +161,7 @@ function showNotification(text) {
     // It Will Be Completed !
 }
 
+// Add An Audio Player Event To An Objecct In Document.
 function audioPlayer(id) {
     this.funcs = {};
     this.object = $(id);
@@ -200,6 +201,7 @@ function keyController(){
     }
 }
 
+// Create A Menu In A Div Easily .
 function menuCreator(id){
     this.id = id;
     this.object = $(id);
@@ -211,7 +213,6 @@ function menuCreator(id){
         obj.style.width = "fit-content";
         document.getElementById(id).appendChild(obj);
     }
-
     this.removeOption = function(name){
         let objs = _('menu');
         for(i in objs){
@@ -221,7 +222,6 @@ function menuCreator(id){
             }
         }
     }
-
     this.addEvent = function(event,name,func){
         let objs = _('menu');
         for(i in objs){
