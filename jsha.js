@@ -24,7 +24,6 @@ function collision(obj1, obj2) {
     let maxRangey = minRangey + parseInt(obj2.height);
     let minPlayery = parseInt(myobj.style.top);
     let maxPlayery = minPlayery + parseInt(myobj.height);
-
     if (maxRangey > minPlayery && minRangey < maxPlayery) {
         let minRange = parseInt(obj2.style.left);
         let maxRange = minRange + parseInt(obj2.width);
@@ -84,20 +83,134 @@ function moveX(obj1, how_many) {
     }
 }
 
-// Move An Element In [how_many] Pixel In Y .
+// Set X Of Element In [how_many] Pixel In X .
+function setX(obj1, how_many) {
+    obj1.style.left = how_many + "px";
+}
+
+// Move An Element In [how_many] Pixels .
 function moveY(obj1, how_many) {
     let num = parseInt(obj1.style.top);
     if (num) {
-        obj1.style.top = (num + how_many) + "px";
+        obj1.style.top = (num - how_many) + "px";
     }
     else {
-        obj1.style.top = (how_many) + "px";
+        obj1.style.top = (-how_many) + "px";
     }
+}
+
+// Set Y Of Element In [how_many] Pixels .
+function setY(obj1, how_many) {
+    obj1.style.top = (-how_many) + "px";
 }
 
 // Remove An Object .
 function remove(obj1) {
     obj1.remove();
+}
+
+// Get Direction Of Two Objects .
+function getDirection(obj1,obj2){
+    if(obj1.type == "gameObject"){
+        if(obj2.type == "gameObject"){
+            let x = obj2.getLocation().x - obj1.getLocation().x;
+            let y = obj2.getLocation().y - obj1.getLocation().y;
+            return { "x" : x , "y" : y };
+        }
+        else{
+            let x = getLocation(obj2).x - obj1.getLocation().x;
+            let y = getLocation(obj2).y - obj1.getLocation().y;
+            return { "x" : x , "y" : y };
+        }
+    }
+    else{
+        if(obj2.type == "gameObject"){
+            let x = obj2.getLocation().x - getLocation(obj1).x;
+            let y = obj2.getLocation().y - getLocation(obj1).y;
+            return { "x" : x , "y" : y };
+        }
+        else{
+            let x = getLocation(obj2).x - getLocation(obj1).x;
+            let y = getLocation(obj2).y - getLocation(obj1).y;
+            return { "x" : x , "y" : y };
+        }
+    }
+}
+
+// Get String Direction Of Two Objects .
+function getDirectionS(obj1,obj2){
+    let dirs = getDirection(obj1,obj2);
+    if(dirs.x > 0){
+        if(dirs.y > 0){
+            return "UR";
+        }
+        else if(dirs.y == 0){
+            return "R";
+        }
+        else{
+            return "DR";
+        }
+    }
+    else if(dirs.x == 0){
+        if(dirs.y > 0){
+            return "U";
+        }
+        else if(dirs.y == 0){
+            return "";
+        }
+        else{
+            return "D";
+        }
+    }
+    else{
+        if(dirs.y > 0){
+            return "UL";
+        }
+        else if(dirs.y == 0){
+            return "L";
+        }
+        else{
+            return "DL";
+        }
+    }
+}
+
+// Get Geographical Direction Of Two Objects .
+function getDirectionG(obj1,obj2){
+    let dirs = getDirection(obj1,obj2);
+    if(dirs.x > 0){
+        if(dirs.y > 0){
+            return "NE";
+        }
+        else if(dirs.y == 0){
+            return "E";
+        }
+        else{
+            return "SE";
+        }
+    }
+    else if(dirs.x == 0){
+        if(dirs.y > 0){
+            return "N";
+        }
+        else if(dirs.y == 0){
+            return "";
+        }
+        else{
+            return "S";
+        }
+    }
+    else{
+        if(dirs.y > 0){
+            return "NW";
+        }
+        else if(dirs.y == 0){
+            return "W";
+        }
+        else{
+            return "SW";
+        }
+    }
 }
 
 // A Class To Have Easy Access To Everything .
@@ -131,6 +244,27 @@ function gameObject(id) {
     };
     this.remove = function () {
         return remove(this.object);
+    };
+    this.x = function(){
+        return this.getLocation().x;
+    };
+    this.y = function(){
+        return this.getLocation().y;
+    };
+    this.setX = function(x){
+        return setX(this.object,x);
+    };
+    this.setY = function(y){
+        return setY(this.object,y);
+    };
+    this.getDirection = function(obj2){
+        return getDirection(this.object,obj2);
+    };
+    this.getDirectionS = function(obj2){
+        return getDirectionS(this.object,obj2);
+    };
+    this.getDirectionG = function(obj2){
+        return getDirectionG(this.object,obj2);
     };
     this.init();
 }
@@ -230,5 +364,10 @@ function menuCreator(id){
             }
         }
     }
-
+    this.destroy = function(){
+        let objs = _('menu');
+        for(i in objs){
+            objs[i].remove();
+        }
+    }
 }
