@@ -1,0 +1,107 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Main Game</title>
+    <style>
+        #fDiv{
+            border: 2px solid;
+            border-radius: 18px;
+            padding: 5px;
+            border-color:lightseagreen;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="mainDiv">
+        <img src="./test.jpg" id="test" style="width: 100px;height: 100px;" />
+        <img src="./test2.jpg" id="test2" style="width: 100px;height: 100px;" />
+    </div>
+    <div id="fDiv">
+
+    </div>
+</body>
+<script src="jsha.js"></script>
+<script>
+    let keyCtrl = new keyController();
+    let player = new gameObject("test");
+    let enemy = new gameObject("test2");
+    let pC = new pageController();
+    player.setL(pC.pageWidth / 2,pC.pageHeight / 5);
+    pC.changeOpacity(55);
+    keyCtrl.addKey("w",function(){player.moveY(maxspeed.number)});
+    keyCtrl.addKey("s",function(){player.moveY(-maxspeed.number)});
+    keyCtrl.addKey("a",function(){player.moveX(-maxspeed.number)});
+    keyCtrl.addKey("d",function(){player.moveX(maxspeed.number)});
+    var level = new number(1);
+    var score = new number();
+    var maxspeed = new number(10);
+    let menu = new menuCreator("fDiv");
+    menu.addOption("Start Game",run);
+    menu.setAttribute("Start Game","id","runG");
+    menu.setCSS("Start Game","color: white;");
+    menu.addOption("About Us",function(){alert("This Game Created By MrArshiaHacker !")});
+    menu.addOption("Exit Game",exit);
+    menu.setCSS("Exit Game","color: white;");
+    menu.setCSS("About Us","color: white;");
+    pC.backcolor("black");
+    //print(pC.pageHeight)
+    menu.setL(pC.pageWidth / 2,pC.pageHeight / 2 + 50);
+    menu.addEventAll("mouseenter",enter);
+    menu.addEventAll("mouseleave",leave);
+    let music = new audioPlayer("runG");
+    music.addPlayer("click",play);
+    function play(){
+        playAudio("main.mp3");
+    }
+    function enter(e){
+        e.target.style.color = "red";
+    }
+    function leave(e){
+        e.target.style.color = "white";
+    }
+    var mainG;
+    function run(){
+        keyCtrl.control();
+        var mainG = setInterval(inspect,100 / level.number);
+        menu.destroy();
+        pC.changeOpacity(100);
+    }
+    function exit(){
+        document.getElementsByTagName("body")[0].remove()
+    }
+    function inspect(){
+        let d = enemy.getDirection(player);
+        if(d.x > 0){
+            enemy.moveX(1);
+        }
+        else if(d.x < 0){
+            enemy.moveX(-1);
+        }
+        if(d.y > 0){
+            enemy.moveY(-1);
+        }
+        else if(d.y < 0){
+            enemy.moveY(1);
+        }
+        if(player.collisionTo(enemy.object)){
+            clearInterval(mainG);
+            alert("You Lose !");
+            location.reload(true); 
+        }
+        score.increase(0.01);
+        if(parseInt(score.number) == level.number){
+            level.increase(1);
+            print("Level Up !");
+            maxspeed.increase(5);
+            clearInterval(mainG);
+            mainG = setInterval(inspect,100 / level.number + ((100 / level.number) / 2));
+        }
+    }
+    
+</script>
+
+</html>
