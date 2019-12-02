@@ -16,6 +16,7 @@
 </head>
 
 <body>
+    <p id="score" style="color:white;">Score : 0</p>
     <div id="mainDiv">
         <img src="./test.jpg" id="test" style="width: 100px;height: 100px;" />
         <img src="./test2.jpg" id="test2" style="width: 100px;height: 100px;" />
@@ -87,16 +88,28 @@
         else if(d.y < 0){
             enemy.moveY(1);
         }
+        if(player.getLocation().y > (pC.pageHeight)){
+            player.setY(pC.pageHeight);
+        }
+        else if(player.getLocation().y < 0){
+            player.setY(0);
+        }
+        if(player.getLocation().x > (pC.pageWidth - player.object.width)){
+            player.setX(0);
+        }
+        else if(player.getLocation().x < 0){
+            player.setX(pC.pageWidth - player.object.width);
+        }
         if(player.collisionTo(enemy.object)){
             clearInterval(mainG);
-            alert("You Lose !");
+            document.write("<center><h1 style='color:white;'>You Lose !</h1></center>")
             location.reload(true); 
         }
         score.increase(0.01);
         if(parseInt(score.number) == level.number){
             level.increase(1);
-            print("Level Up !");
-            maxspeed.increase(5);
+            $("score").innerHTML = "Score : " + level.number;
+            maxspeed.increase();
             clearInterval(mainG);
             mainG = setInterval(inspect,100 / level.number + ((100 / level.number) / 2));
         }
