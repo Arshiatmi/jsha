@@ -19,7 +19,7 @@ function init(obj) {
 function collision(obj1, obj2) {
     let myobj = obj1;
     let minPlayer = parseInt(myobj.style.left);
-    let maxPlayer = minPlayer + parseInt(myobj.style.width);
+    let maxPlayer = minPlayer + parseInt(myobj.width);
     let minRangey = parseInt(obj2.style.top);
     let maxRangey = minRangey + parseInt(obj2.height);
     let minPlayery = parseInt(myobj.style.top);
