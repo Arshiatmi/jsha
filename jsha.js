@@ -417,6 +417,9 @@ function menuCreator(id) {
 function pageController() {
     this.pageWidth = window.innerWidth;
     this.pageHeight = window.innerHeight;
+    this.getOpacity = function(){
+        return document.getElementsByTagName("body")[0].style.opacity;
+    }
     this.changeOpacity = function (percent) {
         document.getElementsByTagName("body")[0].style.opacity = percent / 100;
     }
