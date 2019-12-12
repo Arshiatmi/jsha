@@ -418,7 +418,7 @@ function pageController() {
     this.pageWidth = window.innerWidth;
     this.pageHeight = window.innerHeight;
     this.getOpacity = function(){
-        return document.getElementsByTagName("body")[0].style.opacity;
+        return parseFloat(document.getElementsByTagName("body")[0].style.opacity) * 100;
     }
     this.changeOpacity = function (percent) {
         document.getElementsByTagName("body")[0].style.opacity = percent / 100;
