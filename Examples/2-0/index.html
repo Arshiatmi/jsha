@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <title>My First Jsha Game</title>
+        <script src="jsha.js"></script>
+        <style>
+            #myobj{
+                width: 80px;
+                height: 80px;
+            }
+            #fire{
+                width: 20px;
+                height: 20px;
+            }
+            .text{
+                font-size: 20px;
+                font-weight: bold;
+                color: aqua;
+            }
+        </style>
+    </head>
+    <body bgcolor="black">
+        <div id="board" style="color:black;"></div>
+        <div id="x0" style="color:black;"></div>
+        <div id="o0" style="color:black;"></div>
+    </body>
+    <script>
+        var turn = new number(); // turn = 0 ( x ) && turn = 1 ( o )
+        var scores = {"X":0,"O":0};
+        var counter = new number();
+
+        function test(elem){
+            if(turn.number == 0){
+                board.setText(elem.target,"X","text");
+                board.canEdit(elem.target,false);
+                turn.increase();
+            }
+            else if(turn.number == 1){
+                board.setText(elem.target,"O","text");
+                board.canEdit(elem.target,false);
+                turn.decrease();
+            }
+            counter.increase();
+            if(counter == 9){
+                alert("TIE !");
+                board.clear();
+            }
+            var winner = board.finishCondition("xo");
+            if(winner){
+                alert(winner + " Wins !");
+                scores[winner] += 1;
+                console.log(scores);
+                board.clear();
+            }
+        }
+        var board = new boardObject("board",3,3,"100px","100px","rgb(255,0,0)",test);
+        setInMiddle(board);
+    </script>
+</html>
