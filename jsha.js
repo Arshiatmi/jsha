@@ -231,6 +231,7 @@ function getDirectionG(obj1, obj2) {
     }
 }
 
+// Add A Text To A cell Of Board
 function addText(board,cell,text,css_class,center){
     if(typeof(cell) == "number"){
         cell = "cell_" + cell;
@@ -273,6 +274,7 @@ function addText(board,cell,text,css_class,center){
     }
 }
 
+// Get Text Of A Cell In A Board
 function getText(board,cell){
     if(typeof(cell) == "number"){
         cell = "cell_" + cell;
@@ -298,6 +300,7 @@ function getText(board,cell){
     }
 }
 
+// Set Text Of A Cell In A Board
 function setText(board,cell,text,css_class){
     if(typeof(cell) == "number"){
         cell = "cell_" + cell;
@@ -413,6 +416,7 @@ function gameObject(id) {
     this.init();
 }
 
+// Set A Cell Of Board Uneditable.
 function canEdit(board,cell,can){
     if(typeof(cell) == "number"){
         cell = "cell_" + cell;
@@ -435,6 +439,7 @@ function canEdit(board,cell,can){
     }
 }
 
+// Clears The Board If It Has Any Text.
 function clearBoard(board){
     for(let i = 1 ; i <= board.vertical * board.horizontal ; i++){
         try{
@@ -445,10 +450,21 @@ function clearBoard(board){
     }
 }
 
+// Thats boardObject Uses For All Kind Of Boards.
+//   id             ->   id Of Board
+//   vertical       ->   How Many Rows
+//   Horizontal     ->   How Many Columns
+//   cell_width     ->   How Many (Pixels,...) Each Cell Should Have ( Width ) ?
+//   cell_height    ->   How Many (Pixels,...) Each Cell Should Have ( Height ) ?
+//   line_color     ->   What Is The Color Of Board / Table ?
+//   func           ->   The Function That Get Event Of Click On Board.
 function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,func) {
     this.id = id;
     this.object = $(id);
     this.type = "boardObject";
+    if (!this.object) {
+        throw ReferenceError("Value With " + id + " ID Not Found !");
+    }
     this.banned = [];
     this.vertical = vertical;
     this.horizontal = horizontal;
@@ -480,10 +496,7 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
             document.getElementById("cell_" + counter).style.height = cell_height;
             counter += 1;
         }
-    }
-    if (!this.object) {
-        throw ReferenceError("Value With " + id + " ID Not Found !");
-    }
+    };
     this.banCell = function(cell){
         if(typeof(cell) == "object"){
             if(cell.nodeName == "CENTER")
@@ -513,10 +526,6 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
     this.releaseBans = function(){
         this.banned = [];
     };
-    this.clickCounter = function(event){
-        this.click_cell[event.target.id] += 1;
-        func(event);
-    }
     this.init = function () {
         return init(this.object);
     };
@@ -615,9 +624,9 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
     this.init();
 }
 
+// Thats A Helper If You Want To Make A XO Game, Thats Just A Checker For Who Won The Game.
 function checkXO(board){
     let texts = board.getStatus()["texts"];
-    print(texts);
     if(texts[0] == texts[1] && texts[1] == texts[2] && (texts[0].toUpperCase() == "X" || texts[0].toUpperCase() == "O")){
         return texts[0];
     }
