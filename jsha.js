@@ -121,6 +121,11 @@ function remove(obj1) {
     obj1.remove();
 }
 
+// Remove An Object .
+function destroy(obj1) {
+    obj1.remove();
+}
+
 // Get Direction Of Two Objects .
 function getDirection(obj1, obj2) {
     if (obj1.type == "gameObject") {
