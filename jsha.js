@@ -1,3 +1,41 @@
+// Variables
+var fps=60;
+jshaObject.allInstances = [];
+boardObject.allInstances = [];
+gameObject.allInstances = [];
+number.allInstances = [];
+keyController.allInstances = [];
+pageController.allInstances = [];
+audioPlayer.allInstances = [];
+
+// Try To Run update Function.
+if(typeof(update) == "function"){
+    let jsonResponse = {};
+    jsonResponse["jshaObjects"] = jshaObject.allInstances;
+    jsonResponse["boardObjects"] = boardObject.allInstances;
+    jsonResponse["gameObjects"] = gameObject.allInstances;
+    jsonResponse["numbers"] = number.allInstances;
+    jsonResponse["keyControllers"] = keyController.allInstances;
+    jsonResponse["pageControllers"] = pageController.allInstances;
+    jsonResponse["audioPlayers"] = audioPlayer.allInstances;
+    jsonResponse["fps"] = fps;
+    setInterval(function(){update(jsonResponse)},1000/fps);
+}
+
+function setUpdate(func,targetFPS){
+    let jsonResponse = {};
+    fps = (typeof(targetFPS) == "undefined") ? fps : targetFPS;
+    jsonResponse["jshaObjects"] = jshaObject.allInstances;
+    jsonResponse["boardObjects"] = boardObject.allInstances;
+    jsonResponse["gameObjects"] = gameObject.allInstances;
+    jsonResponse["numbers"] = number.allInstances;
+    jsonResponse["keyControllers"] = keyController.allInstances;
+    jsonResponse["pageControllers"] = pageController.allInstances;
+    jsonResponse["audioPlayers"] = audioPlayer.allInstances;
+    jsonResponse["fps"] = fps;
+    setInterval(function(){func(jsonResponse)},1000/fps);
+}
+
 // Get Object Of An Specific id
 function $(id) {
     return document.getElementById(id);
@@ -42,6 +80,7 @@ function setImg(obj1, img_src) {
 
 // Count Something Like Level, Score And ...
 function number(first_value = 0) {
+    number.allInstances.push(this);
     this.number = first_value;
 
     this.increase = function (how_many = 1) {
@@ -72,14 +111,60 @@ function moveInit(obj1) {
     obj1.style.position = "absolute";
 }
 
+// Javascript Sleep Function !
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Move An Element In [how_many] Pixel In X .
-function moveX(obj1, how_many) {
-    let num = parseInt(obj1.style.left);
-    if (num) {
-        obj1.style.left = (num + how_many) + "px";
+async function moveX(obj1, how_many, animation) {
+    if(typeof(animation) == "undefined"){
+        let num = parseInt(obj1.style.left);
+        if (num) {
+            obj1.style.left = (num + how_many) + "px";
+        }
+        else {
+            obj1.style.left = (how_many) + "px";
+        }
     }
-    else {
-        obj1.style.left = (how_many) + "px";
+    else{
+        let num = parseInt(obj1.style.left);
+        if (num) {
+            // obj1.style.left = (num + how_many) + "px";
+            let counter = 1;
+            if(how_many > 0){
+                for(let i = num ; i < (num + how_many) ; i++){
+                    await sleep(counter);
+                    obj1.style.left = i + "px";
+                    counter += 12/(how_many);
+                }
+            }
+            else{
+                for(let i = num ; i > (num + how_many) ; i--){
+                    await sleep(counter);
+                    obj1.style.left = i + "px";
+                    counter += 12/(Math.abs(how_many));
+                }
+            }
+        }
+        else {
+            let counter = 1;
+            if(how_many > 0){
+                for(let i = 0 ; i < (how_many) ; i++){
+                    await sleep(counter);
+                    obj1.style.left = i + "px";
+                    counter += 12/(how_many);
+                }
+            }
+            else{
+                for(let i = 0 ; i > (how_many) ; i--){
+                    await sleep(counter);
+                    obj1.style.left = i + "px";
+                    counter += 12/(Math.abs(how_many));
+                }
+            }
+        }
+        
     }
 }
 
@@ -89,13 +174,53 @@ function setX(obj1, how_many) {
 }
 
 // Move An Element In [how_many] Pixels .
-function moveY(obj1, how_many) {
-    let num = parseInt(obj1.style.top);
-    if (num) {
-        obj1.style.top = (num - how_many) + "px";
+async function moveY(obj1, how_many, animation) {
+    if(typeof(animation) == "undefined"){
+        let num = parseInt(obj1.style.top);
+        if (num) {
+            obj1.style.top = (num - how_many) + "px";
+        }
+        else {
+            obj1.style.top = (-how_many) + "px";
+        }
     }
-    else {
-        obj1.style.top = (-how_many) + "px";
+    else{
+        let num = parseInt(obj1.style.top);
+        if (num) {
+            // obj1.style.left = (num + how_many) + "px";
+            let counter = 1;
+            if(how_many > 0){
+                for(let i = num ; i > (num - how_many) ; i--){
+                    await sleep(counter);
+                    obj1.style.top = i + "px";
+                    counter += 120/Math.abs(how_many);
+                }
+            }
+            else{
+                for(let i = num ; i < (num - how_many) ; i++){
+                    await sleep(counter);
+                    obj1.style.top = i + "px";
+                    counter += 120/(Math.abs(how_many));
+                }
+            }
+        }
+        else {
+            let counter = 1;
+            if(how_many > 0){
+                for(let i = 0 ; i < (-how_many) ; i++){
+                    await sleep(counter);
+                    obj1.style.top = i + "px";
+                    counter += 120/Math.abs(how_many);
+                }
+            }
+            else{
+                for(let i = 0 ; i > (-how_many) ; i--){
+                    await sleep(counter);
+                    obj1.style.top = i + "px";
+                    counter += 120/(Math.abs(how_many));
+                }
+            }
+        }
     }
 }
 
@@ -158,6 +283,36 @@ function getDirection(obj1, obj2) {
 function setInMiddle(object){
     object.setX(window.innerWidth / 2 - (object.object.offsetWidth / 2));
     object.setY(window.innerHeight / 2 + (object.object.offsetHeight / 2));
+}
+
+// Get Middle Of Page. If You Pass An Object, It Will Give You Center 
+// Depends On Object Width And Height.
+// Object Must Be gamObject, boardObject Or A Simple HTML Object.
+// If mode is "object" It Will Return Center Of Object.
+// If mode is "page" It Will Return Center Of Page Depends On Object.
+function getMiddle(object,mode){
+    mode = (typeof(mode) == "undefined") ? "page" : mode;
+    if(typeof(object) == "undefined"){
+        return [window.innerWidth / 2,window.innerHeight / 2];
+    }
+    else{
+        if(mode == "page"){
+            if(object.type == "gameObject" || object.type == "boardObject"){
+                return [window.innerWidth / 2 - (object.object.offsetWidth / 2),window.innerHeight / 2 - (object.object.offsetHeight / 2)];
+            }
+            else{
+                return [window.innerWidth / 2 - (object.offsetWidth / 2),window.innerHeight / 2 - (object.offsetHeight / 2)];
+            }
+        }
+        else if(mode == "object"){
+            if(object.type == "gameObject" || object.type == "boardObject"){
+                return [object.getLocation().x + (object.object.offsetWidth / 2),object.getLocation().y + (object.object.offsetHeight / 2)];
+            }
+            else{
+                return [getLocation(object).x + (object.offsetWidth / 2),getLocation(object).y + (object.offsetHeight / 2)];
+            }
+        }
+    }
 }
 
 // Get String Direction Of Two Objects .
@@ -367,6 +522,7 @@ function gameObject(id) {
     this.id = id;
     this.object = $(id);
     this.type = "gameObject";
+    gameObject.allInstances.push(this);
     if (!this.object) {
         throw ReferenceError("Value With " + id + " ID Not Found !");
     }
@@ -376,11 +532,11 @@ function gameObject(id) {
     this.moveInit = function () {
         return moveInit(this.object);
     };
-    this.moveX = function (how_many) {
-        return moveX(this.object, how_many);
+    this.moveX = function (how_many, animation) {
+        return moveX(this.object, how_many,animation);
     };
-    this.moveY = function (how_many) {
-        return moveY(this.object, how_many);
+    this.moveY = function (how_many, animation) {
+        return moveY(this.object, how_many, animation);
     };
     this.collisionTo = function (obj2) {
         return collision(this.object, obj2);
@@ -392,6 +548,7 @@ function gameObject(id) {
         return setImg(this.object, src);
     };
     this.remove = function () {
+        gameObject.allInstances.splice(gameObject.allInstances.indexOf(this),1);
         return remove(this.object);
     };
     this.x = function () {
@@ -455,6 +612,193 @@ function clearBoard(board){
     }
 }
 
+// Collision Checker
+function collisionCheck(mainobject,name,func){
+    let objs = _(name);
+    mainobject = $(mainobject);
+    if(mainobject && objs){
+        for(let i = 0 ; i < objs.length ; i++){
+            if(collision(mainobject,objs[i])){
+                func(mainobject,objs[i]);
+            }
+        }
+    }
+}
+
+// Pouring An Object In Specific X In how_many Count .
+function pourX(obj,how_many,y){
+    xc = window.innerWidth / (how_many);
+    let all_jsha_objects = [];
+    for(let i = 1 ; i < how_many ; i++){
+        let newobj = new jshaObject(obj.type,obj.name);
+        if(obj.getAttribute("style")){
+            newobj.setCSS(obj.getAttribute("style"));
+        }
+        newobj.setCSSAttribute("position","absolute");
+        newobj.setCSSAttribute("top",y + "px");
+        newobj.setCSSAttribute("left",(xc - obj.object.width) * i + "px");
+        newobj.innerHTML = obj.innerHTML;
+        newobj.oncollision = obj.oncollision;
+        newobj.object.className = obj.object.className;
+        for(let j = 0 ; j < obj.attributes.length ; j++){
+            newobj.setAttribute(obj.attributes[j],obj.getAttribute(obj.attributes[j]));
+        }
+        newobj.setAttribute("id",obj.getAttribute("id") + i);
+        document.getElementsByTagName("body")[0].appendChild(newobj.create());
+        newobj.oncollision(obj.colArgs.name,obj.colArgs.func);
+        all_jsha_objects.push(newobj);
+    }
+    return all_jsha_objects;
+}
+
+// Just A Helper For setTreshold Function.
+function tresholdHelper(name,x,y){
+    let objs = _(name);
+    for(let i = 0 ; i < objs.length ; i++){
+        if(getLocation(objs[i]).x < x[0] || getLocation(objs[i]).x > x[1]){
+            remove(objs[i]);
+            return "X Treshold !";
+        }
+        else if(getLocation(objs[i]).y < y[0] || getLocation(objs[i]).y > y[1]){
+            remove(objs[i]);
+            return "Y Treshold !";
+        }
+    }
+}
+
+function restart(){
+    location.reload(true);
+}
+
+// Make Treshold For A Type Of Object. If Its Pass From Treshold It Will Remove
+// That Objects.
+function setTreshold(object_name,x,y){
+    if(typeof(x) == "undefined"){
+        x = [0,window.innerWidth];
+    }
+    if(typeof(y) == "undefined"){
+        y = [0,window.innerHeight];
+    }
+    return setInterval(function(){tresholdHelper(object_name,x,y)},1000/fps);
+}
+
+//  That Is jsha Object. Some Thing Are Not Possible In gameObject, But You
+// Have Them Here !
+function jshaObject(type,name){
+    this.name = name;
+    this.type = type;
+    this.object = document.createElement(type);
+    this.object.name = this.name;
+    this.innerHTML = "";
+    this.attributes = [];
+    this.colArgs = {"name":"","func":""};
+    jshaObject.allInstances.push(this);
+    this.animation = function(interval,func){
+        let mode = 1;
+        if (func == "move"){
+            setInterval(function(){
+                let objs = _(this.name);
+                for(let i = 0 ; i < objs ; i++){
+                    moveX(objs[i],mode * 100);
+                    mode = (mode == 1) ? -1 : 1;
+                }
+            },interval);
+        }
+        else if(typeof (func) == "function"){
+            setInterval(func,interval);
+        }
+    }
+    this.moveInit = function () {
+        this.setCSSAttribute("position","absolute");
+    };
+    this.appendTo = function(where,mode,index){
+        if(typeof(mode) == "string"){
+            index = (typeof(index) == "undefined") ? 0 : index;
+            if(mode == "tag"){
+                document.getElementsByTagName(where)[index].appendChild(this.object);
+            }
+            else if(mode == "id"){
+                document.getElementById(where).appendChild(this.object);
+            }
+            else if(mode == "name"){
+                document.getElementsByName(where)[index].appendChild(this.object);
+            }
+            else if(mode == "class"){
+                document.getElementsByClassName(where)[index].appendChild(this.object);
+            }
+        }
+        else{
+            document.getElementsByTagName(where)[0].appendChild(this.object);
+        }
+    };
+    this.setCSSAttribute = function(key,value){
+        let temp_text = this.getCSSAttribute(key);
+        if(temp_text)
+            this.removeCSSAttribute(key);
+        this.object.style[key] = value;
+    };
+    this.removeCSSAttribute = function(key){
+        this.object.style[key] = "";
+    };
+    this.getLocation = function () {
+        return getLocation(this);
+    };
+    this.x = function () {
+        return this.getLocation().x;
+    };
+    this.y = function () {
+        return this.getLocation().y;
+    };
+    this.setCSS = function(str){
+        let string = this.object.getAttribute("style");
+        if(string){
+            this.object.setAttribute("style",string + ";" + str);
+        }
+        else{
+            this.object.setAttribute("style",str);
+        }
+    };
+    this.addClass = function(className){
+        this.object.classList.add(className);
+    };
+    this.setAttribute = function(key, value){
+        this.attributes.push(key);
+        this.object.setAttribute(key,value);
+    };
+    this.getAttribute = function(key){
+        return this.object.getAttribute(key);
+    };
+    this.getCSSAttribute = function(key){
+        return this.object.style[key];
+    };
+    this.setClass = function(className){
+        this.object.className = className;
+    };
+    this.setEvery = function(){
+        this.object.innerHTML = this.innerHTML;
+    };
+    this.create = function(){
+        this.object.innerHTML = this.innerHTML;
+        return this.object;
+    };
+    this.remove = function(){
+        if(this.object){
+            jshaObject.allInstances.splice(jshaObject.allInstances.indexOf(this),1);
+            destroy(this.object);
+        }
+        else{
+            print("Object Not Found !");
+        }
+    };
+    this.oncollision = function(name,func){
+        this.colArgs.name = name;
+        this.colArgs.func = func;
+        let mainobject = this.object.id;
+        setInterval(function(){collisionCheck(mainobject,name,func)},1);
+    };
+    this.moveInit();
+}
+
 // Thats boardObject Uses For All Kind Of Boards.
 //   id             ->   id Of Board
 //   vertical       ->   How Many Rows
@@ -475,6 +819,7 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
     this.horizontal = horizontal;
     this.texts = [];
     this.htmls = [];
+    boardObject.allInstances.push(this);
     for(let i = 0 ; i < horizontal * vertical ; i++){
         this.texts[i] = "";
         this.htmls[i] = "";
@@ -553,6 +898,7 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
         return setImg(this.object, src);
     };
     this.remove = function () {
+        boardObject.allInstances.splice(boardObject.allInstances.indexOf(this),1);
         return remove(this.object);
     };
     this.x = function () {
@@ -617,7 +963,7 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
     };
     this.finishCondition = function(func){
         this.updateData();
-        if(typeof(func) == "object"){
+        if(typeof(func) == "object" || typeof(func) == "function"){
             return func(this.makeStatusObject());
         }
         else if(typeof(func) == "string"){
@@ -666,6 +1012,10 @@ function getLocation(obj1) {
             var a = parseInt(obj1.object.style.left);
             var b = parseInt(obj1.object.style.top);
         }
+        else if(obj1.type == "jshaObject" && obj1.object){
+            var a = parseInt(obj1.object.style.left);
+            var b = parseInt(obj1.object.style.top);
+        }
         else {
             throw "Nothing !";
         }
@@ -692,8 +1042,49 @@ function showNotification(text) {
 function audioPlayer(id) {
     this.funcs = {};
     this.object = $(id);
+    audioPlayer.allInstances.push(this);
     this.addPlayer = function (event, func) {
         return this.object.addEventListener(event, func);
+    }
+}
+
+// It Will Make A gameObject Go To Left With Specific Speed.
+function left(object,speed){
+    if(typeof(speed) == "object"){
+        object.moveX(-speed.number * 10);
+    }
+    else{
+        object.moveX(-speed * 10);
+    }
+}
+
+// It Will Make A gameObject Go To Right With Specific Speed.
+function right(object,speed){
+    if(typeof(speed) == "object"){
+        object.moveX(speed.number * 10);
+    }
+    else{
+        object.moveX(speed * 10);
+    }
+}
+
+// It Will Make A gameObject Go UP With Specific Speed.
+function up(object,speed){
+    if(typeof(speed) == "object"){
+        object.moveY(speed.number * 10);
+    }
+    else{
+        object.moveY(speed * 10);
+    }
+}
+
+// It Will Make A gameObject Go DOWN With Specific Speed.
+function down(object,speed){
+    if(typeof(speed) == "object"){
+        object.moveY(-speed.number * 10);
+    }
+    else{
+        object.moveY(-speed * 10);
     }
 }
 
@@ -713,19 +1104,100 @@ function ctrl(e) {
     }
 }
 
+// A Helper For Setting An Object X To Mouse X .
+function set_object_x_mouse(event,object){
+    if(typeof(object) == "object" && (object.type == "gameObject" || object.type == "boardObject"))
+        if(event.isTrusted)
+            object.setX(event.clientX - (object.object.offsetWidth / 2));
+    else
+        if(event.isTrusted){
+            moveInit(object);
+            setX(object,event.clientX - (object.object.offsetWidth / 2));
+        }
+}
+
+// A Helper For Setting An Object Y To Mouse Y .
+function set_object_y_mouse(event,object){
+    if(typeof(object) == "object" && (object.type == "gameObject" || object.type == "boardObject"))
+        if(event.isTrusted)
+            object.setY(event.clientY - (object.object.offsetHeight / 2));
+    else
+        if(event.isTrusted){
+            moveInit(object);
+            setY(object,event.clientY - (object.object.offsetHeight / 2));
+        }
+}
+
 // Reserve Keys And Function That Should Have Events .
 var keys = {};
 
 // A Class To Control The Key Pressed Better That Past .
 function keyController() {
+    keyController.allInstances.push(this);
+    this.initMovement = function(obj,speed,key){
+        // Order In key Array => left button,right button,down button,up button
+        if(typeof(key) == "undefined"){
+            keys["a"] = function(){left(obj,speed)};
+            keys["d"] = function(){right(obj,speed)};
+            keys["s"] = function(){down(obj,speed)};
+            keys["w"] = function(){up(obj,speed)};
+        }
+        else{
+            if(typeof(speed) != "undefined" && typeof(obj) != "undefined"){
+                if(key.length != 4){
+                    throw "valueError : key Array length Must Be 4 ( left, right, down, up ) ."
+                }
+                if(key.constructor == Object){
+                    if(keys[key["left"]])
+                        keys[key["left"]] = function(){left(obj,speed)};
+                    if(keys[key["right"]])
+                        keys[key["right"]] = function(){right(obj,speed)};
+                    if(keys[key["down"]])
+                        keys[key["down"]] = function(){down(obj,speed)};
+                    if(keys[key["up"]])
+                        keys[key["up"]] = function(){up(obj,speed)};
+                }
+                else{
+                    if(key[0])
+                        keys[key[0]] = function(){left(obj,speed)};
+                    if(key[1])
+                        keys[key[1]] = function(){right(obj,speed)};
+                    if(key[2])
+                        keys[key[2]] = function(){down(obj,speed)};
+                    if(key[3])
+                        keys[key[3]] = function(){up(obj,speed)};
+                }
+            }
+            else{
+                throw "valueError : object And speed Are Required."
+            }
+        }
+    };
     this.addKey = function (key, func) {
         keys[key] = func;
         return "Succussfully Added !";
-    }
+    };
+    this.mouseMove = function(object,mode){
+        if(mode.toUpperCase() == "X"){
+            sendEvent("mousemove",function(event){set_object_x_mouse(event,object)});
+        }
+        else if(mode.toUpperCase() == "Y"){
+            sendEvent("mousemove",function(event){set_object_y_mouse(event,object)});
+        }
+        else{
+            throw "valueError: mode Should Be 'X' Or 'Y'.";
+        }
+    };
+    this.addKeys = function (jsonObject) {
+        for(let key in jsonObject){
+            keys[key] = jsonObject[key];
+        }
+        return "Succussfully Added !";
+    };
     this.control = function () {
         sendEvent("keydown", ctrl);
         return "Controlling ...";
-    }
+    };
 }
 
 // Create A Menu In A Div Easily .
@@ -792,6 +1264,13 @@ function menuCreator(id) {
 function pageController() {
     this.pageWidth = window.innerWidth;
     this.pageHeight = window.innerHeight;
+    pageController.allInstances.push(this);
+    this.getMiddleWidth = function(){
+        return this.pageWidth;
+    }
+    this.getMiddleHeight = function(){
+        return this.pageHeight;
+    }
     this.getOpacity = function(){
         return parseFloat(document.getElementsByTagName("body")[0].style.opacity) * 100;
     }

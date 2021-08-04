@@ -1,34 +1,39 @@
 let obj1 = new gameObject("myobj");
 let page = new pageController();
 let controller = new keyController();
-function moveL(){
-    obj1.moveX(-10);
-}
-function moveR(){
-    obj1.moveX(10);
-}
-controller.addKey("a",moveL);
-controller.addKey("d",moveR);
+// controller.initMovement(obj1,1,["a","d","s","w"]);
+controller.mouseMove(obj1,"x");
+controller.addKeys({" ":shoot})
 controller.control();
-var mover;
+let mover = "";
+let elem;
 obj1.setX(page.pageWidth / 2);
 obj1.setY(page.pageHeight / 4);
+let enemy = new jshaObject('img',"type1");
+enemy.setAttribute("src","./Enemies/enemy1.png");
+enemy.setClass("enemies");
+enemy.oncollision("fires",remover);
+pourX(enemy,10,100);
+pourX(enemy,10,200);
+
+function remover(obj1,obj2){
+    obj1.remove();
+    obj2.remove();
+}
+
 function move(){
-    let elem = document.getElementById('fire');
-    elem.style.top = parseInt(elem.style.top) - 5 + "px";
-    if(parseInt(elem.style.top) <= 2){
-            elem.remove();
-            clearInterval(mover);
+    let objs = _("fires");
+    for(let i = 0 ; i < objs.length ; i++){
+        objs[i].style.top = (parseInt(objs[i].style.top) - 5) + "px";
     }
 }
-function update(event){
-    let elem = document.createElement('img');
-    elem.src = "test.jpg";
-    elem.id = "fire";
-    elem.style.top = $("myobj").style.top;
-    elem.style.left = parseInt($("myobj").style.left) + 30 + "px";
-    document.body.appendChild(elem);
-    let fire = new gameObject('fire');
-    mover = setInterval(move,5);
+function shoot(event){
+    elem = new jshaObject('img','fires');
+    elem.setAttribute("src","test.jpg");
+    elem.addClass("fires");
+    elem.setCSSAttribute("top",$("myobj").style.top);
+    elem.setCSSAttribute("left",(parseInt($("myobj").style.left) + 30) + "px");
+    elem.appendTo("body");
 }
-sendEvent("click",update);
+setTreshold('fires');
+mover = (setInterval(move,1000/fps));

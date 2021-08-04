@@ -33,14 +33,11 @@
     let pC = new pageController();
     player.setL(pC.pageWidth / 2,pC.pageHeight / 5);
     pC.changeOpacity(55);
-    keyCtrl.addKey("w",function(){player.moveY(maxspeed.number)});
-    keyCtrl.addKey("s",function(){player.moveY(-maxspeed.number)});
-    keyCtrl.addKey("a",function(){player.moveX(-maxspeed.number)});
-    keyCtrl.addKey("d",function(){player.moveX(maxspeed.number)});
     var level = new number(1);
     var score = new number();
-    var maxspeed = new number(10);
     let menu = new menuCreator("fDiv");
+    var maxspeed = new number(1);
+    keyCtrl.initMovement(player,maxspeed);
     menu.addOption("Start Game",run);
     menu.setAttribute("Start Game","id","runG");
     menu.setCSS("Start Game","color: white;");
@@ -49,7 +46,6 @@
     menu.setCSS("Exit Game","color: white;");
     menu.setCSS("About Us","color: white;");
     pC.backcolor("black");
-    //print(pC.pageHeight)
     menu.setL(pC.pageWidth / 2,pC.pageHeight / 2 + 50);
     menu.addEventAll("mouseenter",enter);
     menu.addEventAll("mouseleave",leave);
@@ -103,13 +99,13 @@
         if(player.collisionTo(enemy.object)){
             clearInterval(mainG);
             document.write("<center><h1 style='color:white;'>You Lose !</h1></center>")
-            location.reload(true); 
+            restart();
         }
         score.increase(0.01);
         if(parseInt(score.number) == level.number){
             level.increase(1);
             $("score").innerHTML = "Score : " + level.number;
-            maxspeed.increase();
+            maxspeed.increase(0.1);
             clearInterval(mainG);
             mainG = setInterval(inspect,100 / level.number + ((100 / level.number) / 2));
         }
