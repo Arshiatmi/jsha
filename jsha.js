@@ -652,15 +652,15 @@ function pourX(obj,how_many,y){
 }
 
 // Just A Helper For setTreshold Function.
-function tresholdHelper(name,x,y){
+function tresholdHelper(name,func,x,y){
     let objs = _(name);
     for(let i = 0 ; i < objs.length ; i++){
         if(getLocation(objs[i]).x < x[0] || getLocation(objs[i]).x > x[1]){
-            remove(objs[i]);
+            func(objs[i]);
             return "X Treshold !";
         }
         else if(getLocation(objs[i]).y < y[0] || getLocation(objs[i]).y > y[1]){
-            remove(objs[i]);
+            func(objs[i]);
             return "Y Treshold !";
         }
     }
@@ -672,25 +672,25 @@ function restart(){
 
 // Make Treshold For A Type Of Object. If Its Pass From Treshold It Will Remove
 // That Objects.
-function setTreshold(object_name,x,y){
+function setTreshold(object_name,func,x,y){
+    func = (typeof(func) == "undefined") ? remove : func;
     if(typeof(x) == "undefined"){
         x = [0,window.innerWidth];
     }
     if(typeof(y) == "undefined"){
         y = [0,window.innerHeight];
     }
-    return setInterval(function(){tresholdHelper(object_name,x,y)},1000/fps);
+    return setInterval(function(){tresholdHelper(object_name,func,x,y)},1000/fps);
 }
 
 //  That Is jsha Object. Some Thing Are Not Possible In gameObject, But You
 // Have Them Here !
 function jshaObject(type,name){
     this.name = name;
-    this.type = type;
-    this.object = document.createElement(type);
+    this.type = "jshaObject";
+    this.tp = type;
+    this.object = document.createElement(tthis.tpype);
     this.object.name = this.name;
-    this.innerHTML = "";
-    this.attributes = [];
     this.colArgs = {"name":"","func":""};
     jshaObject.allInstances.push(this);
     this.animation = function(interval,func){
@@ -762,7 +762,6 @@ function jshaObject(type,name){
         this.object.classList.add(className);
     };
     this.setAttribute = function(key, value){
-        this.attributes.push(key);
         this.object.setAttribute(key,value);
     };
     this.getAttribute = function(key){

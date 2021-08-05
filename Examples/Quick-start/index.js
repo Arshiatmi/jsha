@@ -1,7 +1,6 @@
 let obj1 = new gameObject("myobj");
 let page = new pageController();
 let controller = new keyController();
-// controller.initMovement(obj1,1,["a","d","s","w"]);
 controller.mouseMove(obj1,"x");
 controller.addKeys({" ":shoot})
 controller.control();
