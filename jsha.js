@@ -8,20 +8,7 @@ keyController.allInstances = [];
 pageController.allInstances = [];
 audioPlayer.allInstances = [];
 
-// Try To Run update Function.
-if(typeof(update) == "function"){
-    let jsonResponse = {};
-    jsonResponse["jshaObjects"] = jshaObject.allInstances;
-    jsonResponse["boardObjects"] = boardObject.allInstances;
-    jsonResponse["gameObjects"] = gameObject.allInstances;
-    jsonResponse["numbers"] = number.allInstances;
-    jsonResponse["keyControllers"] = keyController.allInstances;
-    jsonResponse["pageControllers"] = pageController.allInstances;
-    jsonResponse["audioPlayers"] = audioPlayer.allInstances;
-    jsonResponse["fps"] = fps;
-    setInterval(function(){update(jsonResponse)},1000/fps);
-}
-
+// Set Update Function For A Function That Runs In Every Frame.
 function setUpdate(func,targetFPS){
     let jsonResponse = {};
     fps = (typeof(targetFPS) == "undefined") ? fps : targetFPS;
@@ -85,10 +72,13 @@ function number(first_value = 0) {
 
     this.increase = function (how_many = 1) {
         this.number += how_many;
-    }
+    };
     this.decrease = function (how_many = 1) {
         this.number -= how_many;
-    }
+    };
+    this.set = function(target){
+        this.number = target;
+    };
 }
 
 // Sends Events Like Keypressed And ...
@@ -293,23 +283,23 @@ function setInMiddle(object){
 function getMiddle(object,mode){
     mode = (typeof(mode) == "undefined") ? "page" : mode;
     if(typeof(object) == "undefined"){
-        return [window.innerWidth / 2,window.innerHeight / 2];
+        return {"x":window.innerWidth / 2,"y":window.innerHeight / 2};
     }
     else{
         if(mode == "page"){
             if(object.type == "gameObject" || object.type == "boardObject"){
-                return [window.innerWidth / 2 - (object.object.offsetWidth / 2),window.innerHeight / 2 - (object.object.offsetHeight / 2)];
+                return {"x":window.innerWidth / 2 - (object.object.offsetWidth / 2),"y":window.innerHeight / 2 - (object.object.offsetHeight / 2)};
             }
             else{
-                return [window.innerWidth / 2 - (object.offsetWidth / 2),window.innerHeight / 2 - (object.offsetHeight / 2)];
+                return {"x":window.innerWidth / 2 - (object.offsetWidth / 2),"y":window.innerHeight / 2 - (object.offsetHeight / 2)};
             }
         }
         else if(mode == "object"){
             if(object.type == "gameObject" || object.type == "boardObject"){
-                return [object.getLocation().x + (object.object.offsetWidth / 2),object.getLocation().y + (object.object.offsetHeight / 2)];
+                return {"x":object.getLocation().x + (object.object.offsetWidth / 2),"y":object.getLocation().y + (object.object.offsetHeight / 2)};
             }
             else{
-                return [getLocation(object).x + (object.offsetWidth / 2),getLocation(object).y + (object.offsetHeight / 2)];
+                return {"x":getLocation(object).x + (object.offsetWidth / 2),"y":getLocation(object).y + (object.offsetHeight / 2)};
             }
         }
     }
@@ -523,6 +513,7 @@ function gameObject(id) {
     this.object = $(id);
     this.type = "gameObject";
     gameObject.allInstances.push(this);
+    this.src = this.object.src;
     if (!this.object) {
         throw ReferenceError("Value With " + id + " ID Not Found !");
     }
@@ -545,6 +536,7 @@ function gameObject(id) {
         return getLocation(this);
     };
     this.setImg = function (src) {
+        this.src = src;
         return setImg(this.object, src);
     };
     this.remove = function () {
@@ -689,7 +681,7 @@ function jshaObject(type,name){
     this.name = name;
     this.type = "jshaObject";
     this.tp = type;
-    this.object = document.createElement(tthis.tpype);
+    this.object = document.createElement(this.type);
     this.object.name = this.name;
     this.colArgs = {"name":"","func":""};
     jshaObject.allInstances.push(this);
@@ -718,10 +710,10 @@ function jshaObject(type,name){
                 document.getElementsByTagName(where)[index].appendChild(this.object);
             }
             else if(mode == "id"){
-                document.getElementById(where).appendChild(this.object);
+                $(where).appendChild(this.object);
             }
             else if(mode == "name"){
-                document.getElementsByName(where)[index].appendChild(this.object);
+                _(where)[index].appendChild(this.object);
             }
             else if(mode == "class"){
                 document.getElementsByClassName(where)[index].appendChild(this.object);
@@ -971,6 +963,9 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
             }
         }
     };
+    this.setCellCSS = function(cell_number,str){
+        $("cell_" + cell_number).style = str;
+    }
     this.init();
 }
 
@@ -1127,6 +1122,21 @@ function set_object_y_mouse(event,object){
         }
 }
 
+// A Helper For Setting An Object X And Y To Mouse X And Y .
+function set_object_b_mouse(event,object){
+    if(typeof(object) == "object" && (object.type == "gameObject" || object.type == "boardObject"))
+        if(event.isTrusted){
+            object.setX(event.clientX - (object.object.offsetWidth / 2));
+            object.setY(event.clientY - (object.object.offsetHeight / 2));
+        }    
+    else
+        if(event.isTrusted){
+            moveInit(object);
+            setY(object,event.clientY - (object.object.offsetHeight / 2));
+            setX(object,event.clientX - (object.object.offsetWidth / 2));
+        }
+}
+
 // Reserve Keys And Function That Should Have Events .
 var keys = {};
 
@@ -1140,6 +1150,7 @@ function keyController() {
             keys["d"] = function(){right(obj,speed)};
             keys["s"] = function(){down(obj,speed)};
             keys["w"] = function(){up(obj,speed)};
+            return "Movements Initialized. {'left':'a','right':'d','down':'s','up':'w'}";
         }
         else{
             if(typeof(speed) != "undefined" && typeof(obj) != "undefined"){
@@ -1166,6 +1177,7 @@ function keyController() {
                     if(key[3])
                         keys[key[3]] = function(){up(obj,speed)};
                 }
+                return "Movements Initialized.";
             }
             else{
                 throw "valueError : object And speed Are Required."
@@ -1179,9 +1191,15 @@ function keyController() {
     this.mouseMove = function(object,mode){
         if(mode.toUpperCase() == "X"){
             sendEvent("mousemove",function(event){set_object_x_mouse(event,object)});
+            return "Sending Event...";
         }
         else if(mode.toUpperCase() == "Y"){
             sendEvent("mousemove",function(event){set_object_y_mouse(event,object)});
+            return "Sending Event...";
+        }
+        else if(mode.toUpperCase() == "B"){
+            sendEvent("mousemove",function(event){set_object_b_mouse(event,object)});
+            return "Sending Event...";
         }
         else{
             throw "valueError: mode Should Be 'X' Or 'Y'.";
@@ -1287,5 +1305,32 @@ function pageController() {
     }
     this.backcolor = function (color) {
         document.getElementsByTagName("body")[0].style.backgroundColor = color;
+    }
+}
+
+// Try To Play Next Animation In Sequense
+function playAnimation(object,sequense){
+    let ind = sequense.indexOf(object.src);
+    ind = (ind == -1) ? 0 : ind;
+    ind = (ind == sequense.length - 1) ? 0 : ind;
+    object.setImg(sequense[ind+1]);
+}
+
+// Handle 2d Animations
+function animation(object,sequense,delay,name){
+    this.object = object;
+    this.name = "animation";
+    this.animationName = name;
+    this.sequense = [];
+    this.delay = delay;
+    this.animationInterval = null;
+
+    this.play = function(){
+        this.animationInterval = setInterval(function(){playAnimation(object,sequense)},delay);
+    }
+
+    this.stop = function(){
+        clearInterval(this.animationInterval);
+        this.animationInterval = null;
     }
 }

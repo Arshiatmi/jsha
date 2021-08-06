@@ -27,15 +27,15 @@
 </body>
 <script src="../../jsha.js"></script>
 <script>
-    let keyCtrl = new keyController();
-    let player = new gameObject("test");
-    let enemy = new gameObject("test2");
-    let pC = new pageController();
+    var keyCtrl = new keyController();
+    var player = new gameObject("test");
+    var enemy = new gameObject("test2");
+    var pC = new pageController();
     player.setL(pC.pageWidth / 2,pC.pageHeight / 5);
     pC.changeOpacity(55);
     var level = new number(1);
     var score = new number();
-    let menu = new menuCreator("fDiv");
+    var menu = new menuCreator("fDiv");
     var maxspeed = new number(1);
     keyCtrl.initMovement(player,maxspeed);
     menu.addOption("Start Game",run);
