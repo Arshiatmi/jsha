@@ -8,41 +8,76 @@
                 font-weight: bold;
                 color: aqua;
             }
+            .scores{
+                color: cyan;
+            }
+            .numbers{
+                color: aquamarine;
+            }
         </style>
     </head>
     <body bgcolor="black">
+        <center><h1 class="scores">X &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; O</h1></center>
+        <center><h2 id="score" class="numbers">0 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0</h2></center>
         <div id="board" style="color:black;"></div>
     </body>
     <script>
+        // Declare Variables
         var turn = new number(); // turn = 0 ( x ) && turn = 1 ( o )
         var scores = {"X":0,"O":0};
         var counter = new number();
 
-        function test(elem){
-            if(turn.number == 0){
-                board.setText(elem.target,"X","text");
-                board.canEdit(elem.target,false);
-                turn.increase();
+        function clk(elem){ // elem Is Cell That Event Happend On That.
+            if(turn.number == 0){ // X Turn
+                board.setText(elem.target,"X","text"); // Set Text Of Cell To X And Set "text" Class
+                board.canEdit(elem.target,false); // Make Cell Uneditable
+                turn.increase(); // Change Turn To 1 ( O )
             }
-            else if(turn.number == 1){
-                board.setText(elem.target,"O","text");
-                board.canEdit(elem.target,false);
-                turn.decrease();
+            else if(turn.number == 1){ // Y Turn
+                board.setText(elem.target,"O","text"); // Set Text Of Cell To O And Set "text" Class
+                board.canEdit(elem.target,false); // Make Cell Uneditable
+                turn.decrease(); // Change Turn To 0 ( X )
             }
+            // Counter For TIE.
             counter.increase();
             if(counter == 9){
-                alert("TIE !");
-                board.clear();
+                alert("TIE !"); // TIE Means X And O Are Equals.
+                board.clear(); // Clear The Board For Next Match.
             }
+            // Builtin XO Checker That Is Used Here.
+            // If There Is No Builtin Check For Your Game, You Can Use :
+            //      board.finishCondition(function);
+            // And Function Should Be Like This : 
+            //      function func(event){
+            //          ...
+            //      }
+            // If You Want To See Datails About "event" Here You Are : 
+            //      https://github.com/Arshiatmi/jsha/wiki/boardObject-(-For-Board-Games-)#getstatus
+            // This Builtin Checker Will Return These Values : 
+            //      ["X", "O", null]
             var winner = board.finishCondition("xo");
+
+            // Checks If There Is A Winner Or Not ( If Its Not Null Then Someone Won ! )
             if(winner){
-                alert(winner + " Wins !");
-                scores[winner] += 1;
-                console.log(scores);
-                board.clear();
+                alert(winner + " Wins !"); // Make Alert For Winner
+                scores[winner] += 1; // Add Score For Winner
+                print(scores); // log The Scores
+                board.clear(); // Clear The Board For Next Match.
+                $("score").innerHTML = scores["X"] + " &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; " + scores["O"]; // Just Update Scores At Screen.
             }
         }
-        var board = new boardObject("board",3,3,"100px","100px","rgb(255,0,0)",test);
+        // Create A Board In Game
+        // Arguments :
+        //   id             ->   id Of Board ( "board" )
+        //   vertical       ->   How Many Rows ( 3 )
+        //   Horizontal     ->   How Many Columns ( 3 )
+        //   cell_width     ->   How Many (Pixels,...) Each Cell Should Have ( Width ) ? ( "100px" )
+        //   cell_height    ->   How Many (Pixels,...) Each Cell Should Have ( Height ) ? ( "100px" )
+        //   line_color     ->   What Is The Color Of Board / Table ? ( "rgb(255,0,0)" )
+        //   func           ->   The Function That Get Event Of Click On Board. ( clk )
+        var board = new boardObject("board",3,3,"100px","100px","rgb(255,0,0)",clk);
+
+        // Set Board Location At Middle Of Page
         setInMiddle(board);
     </script>
 </html>

@@ -27,17 +27,28 @@
 </body>
 <script src="../../jsha.js"></script>
 <script>
+    // Define Initialization Variables
     var keyCtrl = new keyController();
     var player = new gameObject("test");
     var enemy = new gameObject("test2");
     var pC = new pageController();
-    player.setL(pC.pageWidth / 2,pC.pageHeight / 5);
-    pC.changeOpacity(55);
     var level = new number(1);
     var score = new number();
     var menu = new menuCreator("fDiv");
     var maxspeed = new number(1);
+
+    // Set Location Of Player
+    player.setL(pC.pageWidth / 2,pC.pageHeight / 5);
+
+    // Make Background A Little Blur.
+    pC.changeOpacity(50);
+    // Another Way : 
+    //    pC.half();
+
+    // Initialize Movements ( W,A,S,D )
     keyCtrl.initMovement(player,maxspeed);
+
+    // Making Menu
     menu.addOption("Start Game",run);
     menu.setAttribute("Start Game","id","runG");
     menu.setCSS("Start Game","color: white;");
@@ -45,32 +56,55 @@
     menu.addOption("Exit Game",exit);
     menu.setCSS("Exit Game","color: white;");
     menu.setCSS("About Us","color: white;");
+
+    // Set Background Color To Black
     pC.backcolor("black");
+
+    // Showing Menu
     menu.setL(pC.pageWidth / 2,pC.pageHeight / 2 + 50);
     menu.addEventAll("mouseenter",enter);
     menu.addEventAll("mouseleave",leave);
-    let music = new audioPlayer("runG");
-    music.addPlayer("click",play);
-    function play(){
-        playAudio("main.mp3");
-    }
+
+    // Make A Music Player
+    let music = new audioEventPlayer("runG");
+    music.addEventPlayer("click",new audioPlayer("main.mp3"));
+    music.addPlayer(new audioPlayer("lose.mp3"));
+
+    // 2 Functions That Used For Menu ( mousehover ).
     function enter(e){
         e.target.style.color = "red";
     }
     function leave(e){
         e.target.style.color = "white";
     }
+
+    // Decclare Interval Variable
     var mainG;
+
+    // Run Game
     function run(){
+        // Start Controlling Keyboard Buttons
         keyCtrl.control();
+        // Make An Interval That Counts Level And Game Process
         var mainG = setInterval(inspect,100 / level.number);
+        // Destroy The Menu
         menu.destroy();
+        // Back Opacity Of Page To Normal.
         pC.changeOpacity(100);
+        // Another Way : 
+        //    pC.normal();
     }
+    
+    // Exit Game Function
     function exit(){
         document.getElementsByTagName("body")[0].remove()
     }
-    function inspect(){
+
+    var lose = false;
+
+    // Game Process
+    async function inspect(){
+        // Get Direction And Check That Which Direction Enemy Should Go.
         let d = enemy.getDirection(player);
         if(d.x > 0){
             enemy.moveX(1);
@@ -84,6 +118,8 @@
         else if(d.y < 0){
             enemy.moveY(1);
         }
+
+        // Spawn In Other Side Of Page If Player Colliding To Walls.
         if(player.getLocation().y > (pC.pageHeight)){
             player.setY(pC.pageHeight);
         }
@@ -96,12 +132,30 @@
         else if(player.getLocation().x < 0){
             player.setX(pC.pageWidth - player.object.width);
         }
+
+        // Check If enemy And Player Have Collision Or Not.
+        // If They Have, User Has Been Lost.
         if(player.collisionTo(enemy.object)){
+            // Clear Interval For Game Process
             clearInterval(mainG);
-            document.write("<center><h1 style='color:white;'>You Lose !</h1></center>")
+            // Stop Music
+            // Write 'You Lose' In Page.
+            if(!lose){
+                document.write("<center><h1 style='color:red;'>You Lose !</h1></center>")
+                // Stop Main Music And Play 
+                music.players["main.mp3"].stop()
+                music.players["lose.mp3"].play()
+            }
+            lose = true;
+            // Wait 1 Second.
+            await sleep(5000);
+            // Restart The Game ( jsha Internal Function )
             restart();
         }
+        // Increase Score If User Didnt Lost.
         score.increase(0.01);
+
+        // Update Score And Level.
         if(parseInt(score.number) == level.number){
             level.increase(1);
             $("score").innerHTML = "Score : " + level.number;

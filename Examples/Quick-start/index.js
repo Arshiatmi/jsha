@@ -1,38 +1,62 @@
-let obj1 = new gameObject("myobj");
+// Declare Initialization Variables
+let player = new gameObject("myobj");
 let page = new pageController();
 let controller = new keyController();
-controller.mouseMove(obj1,"x");
-controller.addKeys({" ":shoot})
-controller.control();
+var speed = new number(10);
 let mover = "";
-let elem;
-obj1.setX(page.pageWidth / 2);
-obj1.setY(page.pageHeight / 4);
+
+let fire = new jshaObject('img','fires');
+fire.setAttribute("src","test.jpg");
+fire.addClass("fires");
+
+// Make A New Raycast To Shoot A Fire
+let f = new raycast(fire,player,speed);
+
+// Set Mouse X To obj1 ( gameObject ) X.
+controller.mouseMove(player,"X");
+// Add Shoot Key ( Space )
+controller.addKeys({" ":function(e){f.shoot();}})
+// Start Controlling Keyboard And Mouse.
+controller.control();
+
+// Set X And Y Of obj1
+player.setX(page.pageWidth / 2);
+player.setY(page.pageHeight / 4);
+
+// jshaObject Are Objects That Will Spawn Later.
+// Arguments : 
+//    type   ->  Type Of Object That Will Spawn Later.
+//    name   ->  name Of Object.
 let enemy = new jshaObject('img',"type1");
+
+// Set HTML src Attribute
 enemy.setAttribute("src","./Enemies/enemy1.png");
+
+// Set Class Name
 enemy.setClass("enemies");
+
+// Specify A Function That Will Run After Collision To Specific Type Of Objects.
+// For Example Here If "enemy" Have collision To Every Object That Have "fires" as 
+// "name" HTML Attribute, function "remover" Will Run.
+// Function Will Receive 2 Argument That Argument1 Is Current gameObject And
+// Argument2 Is gameObject That Have Collision To This Object.
 enemy.oncollision("fires",remover);
-pourX(enemy,10,100);
+
+// pourX Will Spawn Enemy By Equal Distance In Page. For Example
+// pourX(enemy,10,100) Will Spawn 10 Times Of enemy Object In y=100 (y is distance
+// from top of screen)
 pourX(enemy,10,200);
+pourX(enemy,10,100);
 
-function remover(obj1,obj2){
-    obj1.remove();
-    obj2.remove();
+// Function That Runs In Collision.
+function remover(current,target){
+    current.remove();
+    target.remove();
 }
 
-function move(){
-    let objs = _("fires");
-    for(let i = 0 ; i < objs.length ; i++){
-        objs[i].style.top = (parseInt(objs[i].style.top) - 5) + "px";
-    }
-}
-function shoot(event){
-    elem = new jshaObject('img','fires');
-    elem.setAttribute("src","test.jpg");
-    elem.addClass("fires");
-    elem.setCSSAttribute("top",$("myobj").style.top);
-    elem.setCSSAttribute("left",(parseInt($("myobj").style.left) + 30) + "px");
-    elem.appendTo("body");
-}
+// Make Treshold That If Each Fire Gets Out Of Screen, It Will Destroy.
+// You Can Customize Function That It Will Do Something Else Like :
+// setTreshold('fires',myfunc)
+// You Can Customize Treshold Too. Like :
+// setTreshold('fires',myfunc,[startX,endX],[startY,endY])
 setTreshold('fires');
-mover = (setInterval(move,1000/fps));

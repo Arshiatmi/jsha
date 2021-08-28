@@ -7,6 +7,8 @@ number.allInstances = [];
 keyController.allInstances = [];
 pageController.allInstances = [];
 audioPlayer.allInstances = [];
+audioPlayer.players = [];
+let temp_interval;
 
 // Set Update Function For A Function That Runs In Every Frame.
 function setUpdate(func,targetFPS){
@@ -512,6 +514,9 @@ function gameObject(id) {
     this.id = id;
     this.object = $(id);
     this.type = "gameObject";
+    this.rotationX = 0;
+    this.rotationY = 0;
+    this.rotationZ = 0;
     gameObject.allInstances.push(this);
     this.src = this.object.src;
     if (!this.object) {
@@ -528,6 +533,30 @@ function gameObject(id) {
     };
     this.moveY = function (how_many, animation) {
         return moveY(this.object, how_many, animation);
+    };
+    this.rotateX = function(degree){
+        this.rotationX = degree;
+        this.object.style.rotateX = degree;
+    };
+    this.rotateY = function(degree){
+        this.rotationY = degree;
+        this.object.style.rotateY = degree;
+    };
+    this.rotateZ = function(degree){
+        this.rotationZ = degree;
+        this.object.style.rotateZ = degree;
+    };
+    this.rotateRelativeX = function(degree){
+        this.rotationX = (parseInt(this.object.style.transform.slice(8)) + degree) % 360;
+        this.object.style.rotateX = degree;
+    };
+    this.rotateRelativeY = function(degree){
+        this.rotationY = (parseInt(this.object.style.transform.slice(8)) + degree) % 360;
+        this.object.style.rotateY = degree;
+    };
+    this.rotateRelativeZ = function(degree){
+        this.rotationZ = (parseInt(this.object.style.transform.slice(8)) + degree) % 360;
+        this.object.style.rotateZ = degree;
     };
     this.collisionTo = function (obj2) {
         return collision(this.object, obj2);
@@ -566,6 +595,63 @@ function gameObject(id) {
     };
     this.getDirectionG = function (obj2) {
         return getDirectionG(this, obj2);
+    };
+    // this.goToObject = async function(target,speed = 1){
+    //     for(let i = this.getLocation().x ; i < target.getLocation().x ; i++){
+    //         for(let j = this.getLocation().y ; j < target.getLocation().y ; j++){
+
+    //         }
+    //     }
+    //     sleep(1000);
+    // };
+    this.lookAt = function(object,animation = false,animProp = new animator('Look')){
+        let directions = this.getDirection(object);
+        let target_deg = 0;
+        if(directions.x > 0 && directions.y < 0)
+            target_deg = Math.atan(directions.x / -directions.y) * (180/Math.PI);
+        else if(directions.x < 0 && directions.y < 0)
+            target_deg = Math.atan(-directions.x / directions.y) * (180/Math.PI);
+        else if(directions.x > 0 && directions.y > 0)
+            target_deg = Math.atan(directions.x / -directions.y) * (180/Math.PI) + 180;
+        else if(directions.x < 0 && directions.y > 0)
+            target_deg = Math.atan(-directions.x / directions.y) * (180/Math.PI) + 180;
+        else if(directions.x == 0)
+            if(directions.y > 0)
+                target_deg = 180;
+            else
+                target_deg = 0;
+        else if(directions.y == 0)
+            if(directions.x > 0)
+                target_deg = 90;
+            else
+                target_deg = -90;
+        if(animation){
+            let obj = document.getElementById("animationKeys");
+            if(obj){
+                obj.innerHTML = '@keyframes animationLook {' +
+                '    from {transform: rotate(' + this.rotationZ + 'deg);}' +
+                '    to {transform: rotate(' + target_deg + 'deg);}' +
+                '}';
+            }
+            else{
+                let anim = document.createElement("style");
+                anim.id = "animationKeys";
+                let rules = document.createTextNode('@keyframes animationLook {' +
+                                                    '    from {transform: rotate(' + this.rotationZ + 'deg);}' +
+                                                    '    to {transform: rotate(' + target_deg + 'deg);}' +
+                                                    '}');
+            anim.appendChild(rules);
+            document.getElementsByTagName("head")[0].appendChild(anim);
+            }
+        }
+        this.rotationZ = target_deg;
+        if(typeof(animProp) == "object"){
+            this.object.style.animation = animProp.name + " " + animProp.seconds + " " + animProp.loop + " " + animProp.other;
+        }
+        else{
+            this.object.style.animation = animProp;
+        }
+        this.object.style.transform = "rotateZ(" + target_deg + "deg)";
     };
     this.init();
 }
@@ -622,21 +708,22 @@ function pourX(obj,how_many,y){
     xc = window.innerWidth / (how_many);
     let all_jsha_objects = [];
     for(let i = 1 ; i < how_many ; i++){
-        let newobj = new jshaObject(obj.type,obj.name);
+        let newobj = new jshaObject(obj.tp,obj.name);
         if(obj.getAttribute("style")){
             newobj.setCSS(obj.getAttribute("style"));
         }
         newobj.setCSSAttribute("position","absolute");
-        newobj.setCSSAttribute("top",y + "px");
-        newobj.setCSSAttribute("left",(xc - obj.object.width) * i + "px");
         newobj.innerHTML = obj.innerHTML;
         newobj.oncollision = obj.oncollision;
         newobj.object.className = obj.object.className;
-        for(let j = 0 ; j < obj.attributes.length ; j++){
-            newobj.setAttribute(obj.attributes[j],obj.getAttribute(obj.attributes[j]));
+        for(let j in obj.object.attributes){
+            if(obj.object.attributes[j].value)
+                newobj.setAttribute(obj.object.attributes[j].name,obj.object.attributes[j].value);
         }
         newobj.setAttribute("id",obj.getAttribute("id") + i);
         document.getElementsByTagName("body")[0].appendChild(newobj.create());
+        newobj.setCSSAttribute("top",y + "px");
+        newobj.setCSSAttribute("left",(xc * i - (newobj.object.offsetWidth / 2)) + "px");
         newobj.oncollision(obj.colArgs.name,obj.colArgs.func);
         all_jsha_objects.push(newobj);
     }
@@ -658,6 +745,7 @@ function tresholdHelper(name,func,x,y){
     }
 }
 
+// Refresh The Page ( Restart The Game )
 function restart(){
     location.reload(true);
 }
@@ -677,11 +765,12 @@ function setTreshold(object_name,func,x,y){
 
 //  That Is jsha Object. Some Thing Are Not Possible In gameObject, But You
 // Have Them Here !
-function jshaObject(type,name){
+function jshaObject(type,name,use_tag=true){
     this.name = name;
     this.type = "jshaObject";
     this.tp = type;
-    this.object = document.createElement(this.type);
+    if(!use_tag){ this.tp = type; }
+    this.object = document.createElement(this.tp);
     this.object.name = this.name;
     this.colArgs = {"name":"","func":""};
     jshaObject.allInstances.push(this);
@@ -723,12 +812,29 @@ function jshaObject(type,name){
             document.getElementsByTagName(where)[0].appendChild(this.object);
         }
     };
+    this.spawn = function(){
+        document.body.appendChild(this.object);
+    };
     this.setCSSAttribute = function(key,value){
         let temp_text = this.getCSSAttribute(key);
         if(temp_text)
             this.removeCSSAttribute(key);
         this.object.style[key] = value;
     };
+    this.copy = function(){
+        let newobj = new jshaObject(this.tp,this.name);
+        if(this.getAttribute("style")){
+            newobj.setCSS(this.getAttribute("style"));
+        }
+        newobj.innerHTML = this.innerHTML;
+        newobj.oncollision = this.oncollision;
+        newobj.object.className = this.object.className;
+        for(let j in this.object.attributes){
+            newobj.setAttribute(this.object.attributes[j].name,this.object.attributes[j].value);
+        }
+        newobj.create();
+        return (newobj);
+    }
     this.removeCSSAttribute = function(key){
         this.object.style[key] = "";
     };
@@ -965,7 +1071,7 @@ function boardObject(id,vertical,horizontal,cell_width,cell_height,line_color,fu
     };
     this.setCellCSS = function(cell_number,str){
         $("cell_" + cell_number).style = str;
-    }
+    };
     this.init();
 }
 
@@ -1032,13 +1138,30 @@ function showNotification(text) {
     // It Will Be Completed !
 }
 
+// Play If Object Is playerAudio
+function playAudioObject(e,object){
+    object.play()
+}
+
 // Add An Audio Player Event To An Objecct In Document.
-function audioPlayer(id) {
+function audioEventPlayer(id) {
     this.funcs = {};
     this.object = $(id);
+    this.players = {};
     audioPlayer.allInstances.push(this);
-    this.addPlayer = function (event, func) {
-        return this.object.addEventListener(event, func);
+    this.addEventPlayer = function (event, func) {
+        if(typeof(func) == "object"){
+            audioPlayer.players.push(func);
+            this.players[func.source] = func;
+            return this.object.addEventListener(event, function(e){playAudioObject(e,func)});
+        }
+        else{
+            return this.object.addEventListener(event, func);
+        }
+    }
+    this.addPlayer = function (object) {
+        audioPlayer.players.push(object);
+        this.players[object.source] = object;
     }
 }
 
@@ -1083,9 +1206,23 @@ function down(object,speed){
 }
 
 // Play An Audio With source src .
-function playAudio(source) {
-    let audio = new Audio(source);
-    audio.play();
+function audioPlayer(source) {
+    this.source = source;
+    this.audio = new Audio(source);
+    this.play = function(){
+        this.audio.play();
+    };
+    this.pause = function(){
+        this.audio.pause();
+    };
+    this.stop = function(){
+        this.audio.pause();
+        this.audio.currentTime = 0;
+    };
+    this.changeSource = function(source){
+        this.source = source;
+        this.audio = new Audio(source);
+    };
 }
 
 // A Function To Manage Keypressed Events .
@@ -1114,11 +1251,11 @@ function set_object_x_mouse(event,object){
 function set_object_y_mouse(event,object){
     if(typeof(object) == "object" && (object.type == "gameObject" || object.type == "boardObject"))
         if(event.isTrusted)
-            object.setY(event.clientY - (object.object.offsetHeight / 2));
+            object.setY(window.innerHeight - (event.clientY - (object.object.offsetHeight / 2)));
     else
         if(event.isTrusted){
             moveInit(object);
-            setY(object,event.clientY - (object.object.offsetHeight / 2));
+            setY(object,window.innerHeight - (event.clientY - (object.object.offsetHeight / 2)));
         }
 }
 
@@ -1127,12 +1264,12 @@ function set_object_b_mouse(event,object){
     if(typeof(object) == "object" && (object.type == "gameObject" || object.type == "boardObject"))
         if(event.isTrusted){
             object.setX(event.clientX - (object.object.offsetWidth / 2));
-            object.setY(event.clientY - (object.object.offsetHeight / 2));
+            object.setY(window.innerHeight - event.clientY - (object.object.offsetHeight / 2));
         }    
     else
         if(event.isTrusted){
             moveInit(object);
-            setY(object,event.clientY - (object.object.offsetHeight / 2));
+            setY(object,window.innerHeight - event.clientY - (object.object.offsetHeight / 2));
             setX(object,event.clientX - (object.object.offsetWidth / 2));
         }
 }
@@ -1284,36 +1421,48 @@ function pageController() {
     pageController.allInstances.push(this);
     this.getMiddleWidth = function(){
         return this.pageWidth;
-    }
+    };
     this.getMiddleHeight = function(){
         return this.pageHeight;
-    }
+    };
     this.getOpacity = function(){
         return parseFloat(document.getElementsByTagName("body")[0].style.opacity) * 100;
-    }
+    };
     this.changeOpacity = function (percent) {
         document.getElementsByTagName("body")[0].style.opacity = percent / 100;
-    }
+    };
     this.changeElementOpacity = function (id, percent) {
         $(id).style.opacity = percent / 100;
-    }
+    };
     this.changeElementsOpacity = function (name, percent) {
         let d = _(name);
         for (i in d) {
             d[i].style.opacity = percent / 100;
         }
-    }
+    };
     this.backcolor = function (color) {
         document.getElementsByTagName("body")[0].style.backgroundColor = color;
-    }
+    };
+    this.normal = function(){
+        this.changeOpacity(100);
+    };
+    this.half = function(){
+        this.changeOpacity(50);
+    };
 }
 
 // Try To Play Next Animation In Sequense
 function playAnimation(object,sequense){
-    let ind = sequense.indexOf(object.src);
-    ind = (ind == -1) ? 0 : ind;
-    ind = (ind == sequense.length - 1) ? 0 : ind;
-    object.setImg(sequense[ind+1]);
+    object.index += 1;
+    if(object.index == sequense.length){
+        object.index = 0;
+    }
+    if(typeof(sequense[object.index]) == "function"){
+        sequense[object.index]();
+    }
+    else{
+        object.setImg(sequense[object.index]);
+    }
 }
 
 // Handle 2d Animations
@@ -1324,13 +1473,112 @@ function animation(object,sequense,delay,name){
     this.sequense = [];
     this.delay = delay;
     this.animationInterval = null;
+    object.index = -1;
 
     this.play = function(){
         this.animationInterval = setInterval(function(){playAnimation(object,sequense)},delay);
-    }
+    };
 
     this.stop = function(){
         clearInterval(this.animationInterval);
         this.animationInterval = null;
+    };
+};
+
+function animator(name,seconds = '1s',loop,other){
+    if(name == 'Look' || name == 'look' || name == 'animationLook'){
+        this.name = "animationLook";
+        this.seconds = seconds;
+        this.loop = loop;
+        this.other = other;
     }
+    else{
+        this.name = name;
+        this.seconds = seconds;
+        this.loop = loop;
+        this.other = other;
+    }
+}
+
+function Vector(x,y,z){
+    this.x = x;
+    this.y = y;
+    this.z = z;
+}
+
+function raycastMover(name,mode){
+    if(mode == "y"){
+        let objs = _(name);
+        for(let i = 0 ; i < objs.length ; i++){
+            objs[i].style.top = (parseInt(objs[i].style.top) - 5) + "px";
+            if(parseInt(objs[i].style.top) < 0){
+                objs[i].remove();
+            }
+        }
+    }
+    else if(mode == "x"){
+        let objs = _(name);
+        for(let i = 0 ; i < objs.length ; i++){
+            objs[i].style.top = (parseInt(objs[i].style.left) + 5) + "px";
+            if(parseInt(objs[i].style.left) > window.innerWidth){
+                objs[i].remove();
+            }
+        }
+    }
+    else{
+        // X And Y Axis.
+    }
+}
+
+function raycast(fireObject,shooterObject,speed){
+    this.mode = "";
+    this.intervalOn = false;
+    this.fire = fireObject;
+    this.shooter = shooterObject;
+    if(typeof(speed) == "object"){
+        this.speed = speed.number;
+    }
+    else{
+        this.speed = speed;
+    }
+    this.counter = 0;
+    var mymode;
+    this.init = function(){
+        let z = shooterObject.rotationZ;
+        let tan = Math.abs(Math.tan(z));
+        let max = Math.max(tan,1/tan) * (180/Math.PI);
+        let min = Math.min(tan,1/tan) * (180/Math.PI);
+        if(max == Infinity){
+            // Just Y-Axis
+            this.mode = "y";
+        }
+        else if(min == Infinity){
+            // Just X-Axis
+            this.mode = "x";
+        }
+        else{
+            // X And Y Axis
+            this.mode = "xy";
+        }
+        mymode = this.mode;
+    };
+    this.shootInit = function(){
+        temp_interval = setInterval(function(){raycastMover(fireObject.name,mymode)},100 / speed);
+    };
+    this.shoot = function(){
+        if(!this.intervalOn)
+            this.shootInit();
+        this.intervalOn = true;
+        this.fire = this.fire.copy();
+        this.fire.setAttribute("id",this.counter);
+        this.counter += 1;
+        this.fire.setCSSAttribute("top",this.shooter.getLocation().y);
+        this.fire.setCSSAttribute("left",(this.shooter.getLocation().x + 30) + "px");
+        this.fire.appendTo("body");
+    };
+    this.freeze = function(){
+        clearInterval(temp_interval);
+        this.intervalOn = false;
+    };
+    this.init();
 }
